@@ -1,77 +1,128 @@
-// /views/AppointmentList.js
 import React, { useEffect } from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import { Card, CardContent, Typography, Grid } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Avatar,
+  Chip,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const CompletedAppointmentList = () => {
   const appointments = useStoreState((state) => state.appointments);
   const fetchAppointments = useStoreActions((actions) => actions.fetchAppointments);
   const userId = localStorage.getItem('user_id');
-  // console.log(userId);
   const navigate = useNavigate();
+
   useEffect(() => {
-    
     if (userId) {
       fetchAppointments(userId);
     }
   }, [userId, fetchAppointments]);
-  const handleCreateAppointment = () => {
-    navigate('/create-appointment');
-  };
-  const completedAppointments = appointments.filter(appointment => appointment.status === 'completed');
+
+  const completedAppointments = appointments.filter(
+    (appointment) => appointment.status === 'completed'
+  );
 
   return (
-    
-    <Grid container spacing={3}>
-    {/* Fixed "Create Appointment" button */}
-  
-      {completedAppointments.map((appointment) => (
-        <Grid item xs={12} sm={6} md={4} key={appointment._id}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" component="div">
-                Pet: {appointment.pet.name} ({appointment.pet.type})
-              </Typography>
-              <Typography color="textSecondary">
-                Owner: {appointment.user.name}
-              </Typography>
-              <Typography color="textSecondary">
-                Doctor: {appointment.doctor.name}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Date: {new Date(appointment.date).toLocaleDateString()}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Time: {appointment.timeSlot}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Status: {appointment.status}
-              </Typography>
-            </CardContent>
-          </Card>
+    <Box
+      sx={{
+        backgroundColor: '#f8f4ff',
+        minHeight: '100vh',
+        padding: 4,
+      }}
+    >
+      {/* Header Section */}
+      <Box
+        sx={{
+          textAlign: 'center',
+          marginBottom: 4,
+        }}
+      >
+        <Avatar
+          sx={{
+            backgroundColor: '#49416D',
+            width: 60,
+            height: 60,
+            margin: '0 auto',
+            mb: 2,
+          }}
+        >
+          <CheckCircleIcon sx={{ fontSize: 40, color: 'white' }} />
+        </Avatar>
+        <Typography
+          variant="h4"
+          sx={{
+            color: '#4a148c',
+            fontWeight: 'bold',
+            marginBottom: 1,
+          }}
+        >
+          Completed Appointments
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#6a1b9a' }}>
+          View details of your completed appointments.
+        </Typography>
+      </Box>
+
+      {/* Completed Appointments Grid */}
+      {completedAppointments.length === 0 ? (
+        <Typography
+          variant="body1"
+          sx={{ textAlign: 'center', color: '#6a1b9a' }}
+        >
+          No completed appointments found.
+        </Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {completedAppointments.map((appointment) => (
+            <Grid item xs={12} sm={6} md={4} key={appointment._id}>
+              <Card
+                sx={{
+                  boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+                  borderRadius: 2,
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: '#4a148c',
+                      fontWeight: 'bold',
+                      marginBottom: 1,
+                    }}
+                  >
+                    Pet: {appointment.pet.name} ({appointment.pet.type})
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Owner: {appointment.user.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Doctor: {appointment.doctor.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Date: {new Date(appointment.date).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Time: {appointment.timeSlot}
+                  </Typography>
+                  <Chip
+                    label={appointment.status}
+                    color="primary"
+                    sx={{ marginTop: 1, fontWeight: 'bold' }}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
-      ))}
-    </Grid>
+      )}
+    </Box>
   );
 };
-
-const styles = {
-  createButton: {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    padding: '15px 20px',
-    fontSize: '18px',
-    backgroundColor: '#3f51b5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '50%',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    cursor: 'pointer',
-    zIndex: 1000,
-  },
-};
-
 
 export default CompletedAppointmentList;

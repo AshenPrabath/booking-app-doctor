@@ -1,8 +1,18 @@
 import React, { useEffect } from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import { Card, CardContent, Typography, Grid, Button } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Button,
+  Avatar,
+  Chip,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Importing axios
+import axios from 'axios';
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 
 const AppointmentList = () => {
   const appointments = useStoreState((state) => state.appointments);
@@ -16,35 +26,27 @@ const AppointmentList = () => {
     }
   }, [userId, fetchAppointments]);
 
-  const handleCreateAppointment = () => {
-    navigate('/create-appointment');
-  };
-  const getAuthToken = () => {
-    return localStorage.getItem('token');  
-  };
+  const getAuthToken = () => localStorage.getItem('token');
+
   const pendingAppointments = appointments.filter(
     (appointment) => appointment.status === 'pending'
   );
 
   const handleUpdateStatus = async (appointmentId, status) => {
-
     try {
       const token = getAuthToken();
       const response = await axios.patch(
         'http://localhost:5001/api/appointments/update-status',
+        { appointmentId, status },
         {
-          appointmentId,
-          status,
-        },{
           headers: {
-            'Content-Type': 'application/json',  // Ensure correct content type
-            'Authorization': 'Bearer ' + token,  // Add the Authorization header with Bearer token
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       if (response.status === 200) {
-        // Refresh the appointments after status update
         fetchAppointments(userId);
         alert(`Appointment marked as ${status}`);
       } else {
@@ -57,77 +59,122 @@ const AppointmentList = () => {
   };
 
   return (
-    <Grid container spacing={3}>
-      {/* Fixed "Create Appointment" button */}
+    <Box
+      sx={{
+        backgroundColor: '#f8f4ff',
+        minHeight: '100vh',
+        padding: 4,
+      }}
+    >
+      <Box
+        sx={{
+          textAlign: 'center',
+          marginBottom: 4,
+        }}
+      >
+        <Avatar
+          sx={{
+            backgroundColor: '#6a1b9a',
+            width: 60,
+            height: 60,
+            margin: '0 auto',
+            mb: 2,
+          }}
+        >
+          <AccessAlarmIcon sx={{ fontSize: 40, color: 'white' }} />
+        </Avatar>
+        <Typography
+          variant="h4"
+          sx={{
+            color: '#4a148c',
+            fontWeight: 'bold',
+            marginBottom: 1,
+          }}
+        >
+          Pending Appointments
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#6a1b9a' }}>
+          Review and manage your pending appointments.
+        </Typography>
+      </Box>
 
-      {pendingAppointments.map((appointment) => (
-        <Grid item xs={12} sm={6} md={4} key={appointment._id}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" component="div">
-                Pet: {appointment.pet.name} ({appointment.pet.type})
-              </Typography>
-              <Typography color="textSecondary">
-                Owner: {appointment.user.name}
-              </Typography>
-              <Typography color="textSecondary">
-                Doctor: {appointment.doctor.name}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Date: {new Date(appointment.date).toLocaleDateString()}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Time: {appointment.timeSlot}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Status: {appointment.status}
-              </Typography>
-
-              {/* Accept/Decline buttons */}
-              <div>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleUpdateStatus(appointment._id, 'confirmed')}
-                  style={styles.actionButton}
-                >
-                  Accept
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => handleUpdateStatus(appointment._id, 'cancelled')}
-                  style={styles.actionButton}
-                >
-                  Decline
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {pendingAppointments.length === 0 ? (
+        <Typography
+          variant="body1"
+          sx={{ textAlign: 'center', width: '100%', color: '#6a1b9a' }}
+        >
+          No pending appointments to review.
+        </Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {pendingAppointments.map((appointment) => (
+            <Grid item xs={12} sm={6} md={4} key={appointment._id}>
+              <Card
+                sx={{
+                  boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+                  borderRadius: 2,
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{
+                      color: '#4a148c',
+                      fontWeight: 'bold',
+                      marginBottom: 1,
+                    }}
+                  >
+                    Pet: {appointment.pet.name} ({appointment.pet.type})
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Owner: {appointment.user.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Doctor: {appointment.doctor.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Date: {new Date(appointment.date).toLocaleDateString()}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Time: {appointment.timeSlot}
+                  </Typography>
+                  <Chip
+                    label={appointment.status}
+                    color="warning"
+                    sx={{ marginTop: 1, fontWeight: 'bold' }}
+                  />
+                  <Box sx={{ marginTop: 2 }}>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        backgroundColor: '#4caf50',
+                        '&:hover': { backgroundColor: '#388e3c' },
+                        marginRight: 1,
+                      }}
+                      onClick={() => handleUpdateStatus(appointment._id, 'confirmed')}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        backgroundColor: '#f44336',
+                        '&:hover': { backgroundColor: '#d32f2f' },
+                      }}
+                      onClick={() => handleUpdateStatus(appointment._id, 'cancelled')}
+                    >
+                      Decline
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
-      ))}
-    </Grid>
+      )}
+    </Box>
   );
-};
-
-const styles = {
-  createButton: {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    padding: '15px 20px',
-    fontSize: '18px',
-    backgroundColor: '#3f51b5',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '50%',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    cursor: 'pointer',
-    zIndex: 1000,
-  },
-  actionButton: {
-    margin: '5px',
-  },
 };
 
 export default AppointmentList;

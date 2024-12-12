@@ -82,12 +82,20 @@ const storeModel = {
       localStorage.setItem('user_id', user_id);
       localStorage.setItem('user', JSON.stringify({ email }));
 
+      actions.setError(null); // Reset error state on successful login
+
       console.log(user_id);
+      return { success: true }; 
     } catch (error) {
+    if (error.response && error.response.status === 401) {
+      actions.setError('Invalid email or password'); // Set specific error message
+    } else {
       actions.setError('Login failed');
-    } finally {
-      actions.setLoading(false);
     }
+    return { success: false }; // Indicate failure
+  } finally {
+    actions.setLoading(false);
+  }
   }),
 
   registerUser: thunk(async (actions, { name, email, password ,phone, appointmentCharge, startTime,endTime}) => {
